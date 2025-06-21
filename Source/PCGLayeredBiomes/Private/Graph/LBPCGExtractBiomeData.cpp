@@ -107,7 +107,9 @@ bool FLBPCGExtractBiomeData::ExecuteInternal(FPCGContext* Context) const
 				OutData->Metadata->SetAttributeFromDataProperty(AttributeName, MetadataKey, BiomeSettings, *FieldIt, true);
 			}
 		
-			Context->OutputData.TaggedData.Add({OutData, {}, "Biome Settings", false});
+			FPCGTaggedData& BiomeSettingsTaggedData = Context->OutputData.TaggedData.Add_GetRef({});
+			BiomeSettingsTaggedData.Data = OutData;
+			BiomeSettingsTaggedData.Pin = "Biome Settings";
 		}
 		
 		for (const auto& Layer: BiomeSettings->Layers)
@@ -124,7 +126,9 @@ bool FLBPCGExtractBiomeData::ExecuteInternal(FPCGContext* Context) const
 				OutData->Metadata->SetAttributeFromProperty(Property->GetFName(), MetadataKey, Layer.Get(), Property, true);
 			}
 
-			Context->OutputData.TaggedData.Add({OutData, {}, "Layers", false});
+			FPCGTaggedData& LayersTaggedData = Context->OutputData.TaggedData.Add_GetRef({});
+			LayersTaggedData.Data = OutData;
+			LayersTaggedData.Pin = "Layers";
 		}
 	}
 	else

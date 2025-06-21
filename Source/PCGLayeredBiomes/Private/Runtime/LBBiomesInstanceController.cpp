@@ -31,6 +31,7 @@
 #include "Engine/World.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Grid/PCGPartitionActor.h"
+#include "Grid/PCGGridDescriptor.h"
 
 
 bool FLBBiomesInstanceData::operator==(const FLBBiomesInstanceHandle& Handle) const
@@ -158,7 +159,7 @@ void ULBBiomesInstanceController::OnInstanceIndexRelocated(UInstancedStaticMeshC
 {
 	if (auto* Indices = TrackedComponents.Find(Component))
 	{
-		checkSlow(Indices.Num() >= Component->GetNumInstances());
+		checkSlow(Indices->Num() >= Component->GetNumInstances());
 		
 		for (const auto& Item: Data)
 		{
@@ -374,7 +375,9 @@ bool ULBBiomesInstanceController::FindDataByHandle(const FLBBiomesInstanceHandle
 			return false;
 		}
 
-		Result.Actor = PCG->GetRegisteredPCGPartitionActor(Partition.GridSize, Partition.GridCoord, false);
+		FPCGGridDescriptor GridDescriptor;
+		GridDescriptor.SetGridSize(Partition.GridSize);
+		Result.Actor = PCG->GetRegisteredPCGPartitionActor(GridDescriptor, Partition.GridCoord);
 		Result.Index = Index;
 		Result.Instances = Instances;
 		return true;
@@ -457,7 +460,9 @@ void ULBBiomesInstanceController::SetPersistentData(const FLBBiomesPersistentIns
 		{
 			for (const auto& [Partition, Instances]: PartitionedInstances)
 			{
-				if (auto* Actor = PCG->GetRegisteredPCGPartitionActor(Partition.GridSize, Partition.GridCoord, false))
+				FPCGGridDescriptor GridDescriptor;
+				GridDescriptor.SetGridSize(Partition.GridSize);
+				if (auto* Actor = PCG->GetRegisteredPCGPartitionActor(GridDescriptor, Partition.GridCoord))
 				{
 					for (const auto& InstanceData: Instances)
 					{
@@ -497,7 +502,9 @@ void ULBBiomesInstanceController::SetPersistentData(const FLBBiomesPersistentIns
 
 		for (const auto& [Partition, Instances] : Data.PartitionedInstances)
 		{
-			if (auto* Actor = PCG->GetRegisteredPCGPartitionActor(Partition.GridSize, Partition.GridCoord, false))
+			FPCGGridDescriptor GridDescriptor;
+			GridDescriptor.SetGridSize(Partition.GridSize);
+			if (auto* Actor = PCG->GetRegisteredPCGPartitionActor(GridDescriptor, Partition.GridCoord))
 			{
 				ApplyStateToActor(Actor, Instances, true);
 			}
@@ -541,7 +548,7 @@ struct FInstancesCache
 			auto& Mapping = GlobalToLocal.FindOrAdd(Component);
 			const auto Count = ToGlobal.Num();
 			// Limit to current count of elements because ToGlobal might have more elements
-			Mapping.SetNumUninitialized(Count, false);
+			Mapping.SetNumUninitialized(Count, EAllowShrinking::No);
 			for (int i = 0; i < Count; ++i)
 			{
 				const auto GlobalId = ToGlobal[i];

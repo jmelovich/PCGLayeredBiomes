@@ -27,6 +27,7 @@
 #include "LBPCGSpawnStructures.h"
 #include "Components/ActorComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "UObject/ObjectSaveContext.h"
 #include "LBBiomesSpawnManager.generated.h"
 
 
